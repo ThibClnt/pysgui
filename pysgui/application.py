@@ -45,8 +45,8 @@ class Application:
         """
         self._windows.append(window)
 
-        if window.fullscreen or window.rect.size == (0, 0):
-            window.resize(self._screen.get_rect())
+        if window.fullscreen:
+            window.rect = self._screen.get_rect()
 
     def quit(self):
         """
@@ -78,16 +78,17 @@ class Application:
                     self._screen = pg.display.set_mode(self._size, self._flags)
                     for window in self._windows:
                         if window.fullscreen:
-                            window.resize(self._screen.get_rect())
+                            window.rect = self._screen.get_rect()
+
+                for window in reversed(self._windows):
+                    window.handle_event(event)
 
             for window in self._windows:
-                window.handle_events(events)
                 window.update(dt)
 
             self._screen.fill((0, 0, 0))
             for window in self._windows:
-                if window.visible:
-                    window.draw(self._screen)
+                window.draw(self._screen)
 
             pg.display.flip()
 
