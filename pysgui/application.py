@@ -1,6 +1,7 @@
 import pygame as pg
 from typing import final
 
+from .styling import ThemeStore
 from .window import Window
 
 
@@ -22,6 +23,7 @@ class Application:
         :param flags: Flags for the application window. Use pygame display flags.
         """
         pg.init()
+        ThemeStore.load_default_themes()
 
         self._title = title
         self._size = size
@@ -65,6 +67,9 @@ class Application:
         self.running = True
 
         while self.running:
+            if len(self._windows) == 0:
+                raise RuntimeError("No windows in the application. Add at least one window before running the application.")
+
             dt = self._clock.tick(self.fps) / 1000.0
 
             events = pg.event.get()
