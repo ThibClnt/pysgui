@@ -89,9 +89,10 @@ class Style:
 
 class Theme:
 
-    def __init__(self, name: str, styles: dict[str, Style] = None):
+    def __init__(self, name: str, styles: dict[str, Style] = None, variables: dict = None):
         self.__name: str = name
-        self.styles: dict[str, Style] = styles or {}
+        self.__styles: dict[str, Style] = styles or {}
+        self.__variables: dict = variables or {}
 
     def get(self, name: str, default: Style = Style()) -> Style:
         """
@@ -99,7 +100,16 @@ class Theme:
         :param name: Name of the style
         :return: Style object
         """
-        return self.styles.get(name, default)
+        return self.__styles.get(name, default)
+
+    def get_variable(self, name: str, default=None):
+        """
+        Get a variable by name.
+        :param name: Name of the variable
+        :param default: Default value to return if the variable is not found
+        :return: Variable value
+        """
+        return self.__variables.get(name, default)
 
     @property
     def name(self) -> str:
@@ -113,20 +123,45 @@ class Theme:
         """
         self.styles[name] = style
 
+    def set_variable(self, name: str, value) -> None:
+        """
+        Set a variable by name.
+        :param name: Name of the variable
+        :param value: Variable value
+        """
+        self.variables[name] = value
+
+    @property
+    def styles(self):
+        return self.__styles
+
+    @property
+    def style_names(self):
+        return list(self.__styles.keys())
+
+    @property
+    def variables(self):
+        return self.__variables
+
+    @property
+    def variable_names(self):
+        return list(self.__variables.keys())
+
 
 class ThemeStore:
     __store: dict[str, Theme] = {}
     __current: Theme
 
     @staticmethod
-    def add(name: str, styles: dict[str, Style] = None) -> Theme:
+    def add(name: str, styles: dict[str, Style] = None, variables: dict = None) -> Theme:
         """
         Add a new theme.
         :param name: Name of the new theme
         :param styles: Styles composing the theme
+        :param variables: Variables defined in the theme
         :return: The new theme object
         """
-        theme = Theme(name, styles)
+        theme = Theme(name, styles, variables)
         ThemeStore.__store[name] = theme
         return theme
 
@@ -183,11 +218,22 @@ class ThemeStore:
         :param path: Path to the theme file
         :return: The loaded theme
         """
+
+        def resolve(value):
+            """Resolve if the value is a variable."""
+            if isinstance(value, str) and value.startswith("$"):
+                var_name = value[1:]
+                if var_name not in variables:
+                    raise ValueError(f"Variable '{var_name}' not found in theme variables.")
+                return variables[var_name]
+            return value
+
         with open(path) as file:
             data = json.load(file)
 
         try:
             theme_name = data["name"]
+            variables: dict = data.get("variables", dict())
             json_styles = data["styles"]
         except (KeyError, TypeError) as e:
             raise TypeError("Invalid theme file. A theme must have a name and one or several styles.") from e
@@ -195,11 +241,12 @@ class ThemeStore:
         styles = dict()
         for name, style in json_styles.items():
             try:
-                styles[name] = Style(**style)
+                resolved_style = {key: resolve(value) for key, value in style.items()}
+                styles[name] = Style(**resolved_style)
             except (KeyError, TypeError) as e:
                 raise TypeError(f"Invalid style '{name}' in theme '{theme_name}'.") from e
 
-        return ThemeStore.add(theme_name, styles)
+        return ThemeStore.add(theme_name, styles, variables)
 
     @staticmethod
     def remove(name: str) -> None:

@@ -1,24 +1,32 @@
 {
   "name": "pysguy_light",
+  "variables": {
+    "background_primary": "#f0f0f0ff",
+    "border_color": "#a0a0a0ff",
+    "border_radius": 4,
+    "border_width": 1,
+    "font_name": "segoeui",
+    "font_size": 12,
+    "foreground_primary": "#202020ff",
+    "secondary_background": "#e0e0e0ff",
+    "shadow_color": "#00000040",
+    "shadow_offset": [1, 1]
+  },
   "styles": {
     "window": {
-      "background_color": "#f0f0f0ff",
-      "border_color": "#a0a0a0a0",
-      "border_radius": 4,
-      "border_width": 1,
+      "background_color": "$background_primary",
+      "border_color": "$border_color",
+      "border_radius": "$border_radius",
+      "border_width": "$border_width",
       "caption_height": 24,
-      "foreground_color": "#000000ff",
-      "font_name": "segoeui",
-      "font_size": 14,
-      "secondary_background_color": "#e0e0e0ff",
-      "secondary_border_color": "#a0a0a0a0",
-      "secondary_border_width": 1,
-      "secondary_foreground_color": "#000000ff",
-      "shadow_color": "#00000040",
-      "shadow_offset": [
-        1,
-        1
-      ]
+      "foreground_color": "$foreground_primary",
+      "font_name": "$font_name",
+      "font_size": "$font_size",
+      "secondary_background_color": "$secondary_background",
+      "secondary_border_color": "$border_color",
+      "secondary_border_width": "$border_width",
+      "shadow_color": "$shadow_color",
+      "shadow_offset": "$shadow_offset"
     }
   }
 }

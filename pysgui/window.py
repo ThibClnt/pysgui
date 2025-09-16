@@ -126,7 +126,7 @@ class PopupWindow(Window):
                 pg.draw.rect(self._surface, self.style.secondary_border_color, (0, 0, self.rect.width, self.style.caption_height),
                              self.style.secondary_border_width,
                              border_top_left_radius=self.style.border_radius, border_top_right_radius=self.style.border_radius)
-            self._surface.blit(self._caption_font.render(self.title, True, self.style.text_color), (text_x, text_y))
+            self._surface.blit(self._caption_font.render(self.title, True, self.style.foreground_color), (text_x, text_y))
 
         # Content and border
         content_y_offset = self.style.caption_height if self._show_caption else 0
