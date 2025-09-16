@@ -1,20 +1,24 @@
 {
   "name": "pysguy_light",
-    "styles": {
-      "window": {
-        "background_color": "#f0f0f0ff",
-        "border_color": "#a0a0a0a0",
-        "border_radius": 4,
-        "border_width": 1,
-        "caption_height": 24,
-        "font_name": "segoeui",
-        "font_size": 14,
-        "secondary_background_color": "#e0e0e0ff",
-        "secondary_border_color": "#a0a0a0a0",
-        "secondary_border_width": 1,
-        "shadow_color": "#00000040",
-        "shadow_offset": [1, 1],
-        "text_color": "#000000ff"
-      }
+  "styles": {
+    "window": {
+      "background_color": "#f0f0f0ff",
+      "border_color": "#a0a0a0a0",
+      "border_radius": 4,
+      "border_width": 1,
+      "caption_height": 24,
+      "foreground_color": "#000000ff",
+      "font_name": "segoeui",
+      "font_size": 14,
+      "secondary_background_color": "#e0e0e0ff",
+      "secondary_border_color": "#a0a0a0a0",
+      "secondary_border_width": 1,
+      "secondary_foreground_color": "#000000ff",
+      "shadow_color": "#00000040",
+      "shadow_offset": [
+        1,
+        1
+      ]
     }
+  }
 }

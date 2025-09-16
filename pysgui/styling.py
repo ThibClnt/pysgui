@@ -1,3 +1,4 @@
+from __future__ import annotations
 __all__ = ["Color", "COLORS", "ColorType", "StylableMixin", "Style", "Theme", "ThemeStore"]
 
 from dataclasses import dataclass
@@ -20,8 +21,27 @@ class StylableMixin:
         self.style_name: str = style_name
 
     @property
+    def active_style(self):
+        return self.__get_with_state("active")
+
+    @property
+    def disabled_style(self):
+        return self.__get_with_state("disabled")
+
+    @property
+    def focus_style(self):
+        return self.__get_with_state("focus")
+
+    @property
+    def hover_style(self):
+        return self.__get_with_state("hover")
+
+    @property
     def style(self):
         return ThemeStore.current().get(self.style_name)
+
+    def __get_with_state(self, state: str) -> Style:
+        return ThemeStore.current().get(f"{self.style_name}:{state}", self.style)
 
 
 @dataclass
@@ -38,6 +58,7 @@ class Style:
     border_top_right_radius: int | None = None
     border_width: int = 1
     caption_height: int = 30
+    foreground_color: ColorType = (0, 0, 0, 255)
     font_name: str = "Arial"
     font_size: int = 14
     secondary_background_color: ColorType = (248, 248, 248, 255)
@@ -45,10 +66,9 @@ class Style:
     secondary_border_width: int = 1
     secondary_font_name: str = "Arial"
     secondary_font_size: int = 14
-    secondary_text_color: ColorType = (0, 0, 0, 255)
+    secondary_foreground_color: ColorType = (0, 0, 0, 255)
     shadow_color: ColorType = (0, 0, 0, 100)
     shadow_offset: tuple[int, int] = (0, 0)
-    text_color: ColorType = (0, 0, 0, 255)
 
     def font(self, secondary: bool = False) -> pygame.Font:
         """
@@ -73,13 +93,13 @@ class Theme:
         self.__name: str = name
         self.styles: dict[str, Style] = styles or {}
 
-    def get(self, name: str) -> Style:
+    def get(self, name: str, default: Style = Style()) -> Style:
         """
         Get a style by name.
         :param name: Name of the style
         :return: Style object
         """
-        return self.styles.get(name, Style())
+        return self.styles.get(name, default)
 
     @property
     def name(self) -> str:
