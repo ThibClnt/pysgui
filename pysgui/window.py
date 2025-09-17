@@ -110,6 +110,8 @@ class PopupWindow(Window):
         surface.blit(self._surface, self.rect.topleft)
 
     def _build_surfaces(self):
+        super()._build_surfaces()
+
         # Shadow surface
         shadow_width = self.rect.width + abs(self.style.shadow_offset[0])
         shadow_height = self.rect.height + abs(self.style.shadow_offset[1])

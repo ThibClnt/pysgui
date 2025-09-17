@@ -19,6 +19,9 @@ class StylableMixin:
     This mixin provides properties to access different styles based on the current theme and the state of the widget.
     Change the style of a widget by updating the style name or using the style property.
 
+    Registers to listen for style changes by setting the on_style_change callback.
+    Use the handle_event method to handle theme change events.
+
     Example::
 
         class MyWidget(StylableMixin):
@@ -93,7 +96,7 @@ class StylableMixin:
         return ThemeStore.current().get(f"{self.style_name}:{state}", self.style)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Style:
     """
     A class for storing a variety of styles.
@@ -275,7 +278,7 @@ class ThemeStore:
         :return: The loaded theme
         """
 
-        def resolve(value):
+        def resolve_variable(value):
             """Resolve if the value is a variable."""
             if isinstance(value, str) and value.startswith("$"):
                 var_name = value[1:]
@@ -296,24 +299,38 @@ class ThemeStore:
         except (KeyError, TypeError) as e:
             raise TypeError("Invalid theme file. A theme must have a name and one or several styles.") from e
 
-        styles = dict()
         if root_name is not None and root_name not in json_styles:
             raise ValueError(f"Root style '{root_name}' not found in theme styles.")
 
-        resolved_root = dict()
+        cache: dict[str, Style] = {}
 
-        if root_name:
-            json_root = json_styles[root_name]
-            del json_styles[root_name]
-            resolved_root = {key: resolve(value) for key, value in json_root.items()}
-            styles[root_name] = Style(**resolved_root)
+        def resolve_style(name: str) -> Style:
+            """Resolve a style by name, using cache to avoid re-computation."""
+            if name in cache:
+                return cache[name]
 
-        for name, style in json_styles.items():
-            try:
-                resolved_style = {key: resolve(value) for key, value in style.items()}
-                styles[name] = Style(**{**resolved_root, **resolved_style})
-            except (KeyError, TypeError) as e:
-                raise TypeError(f"Invalid style '{name}' in theme '{theme_name}'.") from e
+            resolved_style = {key: resolve_variable(value) for key, value in json_styles[name].items()}
+
+            if '>' in name:
+                parent_name = '>'.join(name.split('>')[:-1])
+            elif name != root_name:
+                parent_name = root_name
+            else:
+                parent_name = None
+
+            if parent_name:
+                if parent_name not in json_styles and parent_name not in cache:
+                    raise ValueError(f"Parent style '{parent_name}' not found for style '{name}'.")
+                parent_style = resolve_style(parent_name)
+                merged = {**parent_style.__dict__, **resolved_style}
+            else:
+                merged = resolved_style
+
+            style = Style(**merged)
+            cache[name] = style
+            return style
+
+        styles = {name: resolve_style(name) for name in json_styles.keys()}
 
         return ThemeStore.add(Theme(theme_name, styles, variables, root_name))
 
