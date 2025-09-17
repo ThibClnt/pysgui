@@ -1,5 +1,6 @@
 {
   "name": "pysguy_light",
+  "root": "root",
   "variables": {
     "background_primary": "#f0f0f0ff",
     "border_color": "#a0a0a0ff",
@@ -13,20 +14,23 @@
     "shadow_offset": [1, 1]
   },
   "styles": {
-    "window": {
+    "root": {
       "background_color": "$background_primary",
       "border_color": "$border_color",
       "border_radius": "$border_radius",
       "border_width": "$border_width",
-      "caption_height": 24,
-      "foreground_color": "$foreground_primary",
       "font_name": "$font_name",
       "font_size": "$font_size",
+      "foreground_color": "$foreground_primary",
       "secondary_background_color": "$secondary_background",
       "secondary_border_color": "$border_color",
       "secondary_border_width": "$border_width",
       "shadow_color": "$shadow_color",
       "shadow_offset": "$shadow_offset"
+    },
+    "window": {
+      "caption_height": 24,
+      "background_color": "red"
     }
   }
 }

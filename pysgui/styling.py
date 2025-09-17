@@ -15,6 +15,8 @@ ColorType = str | Color | tuple[int, int, int, int] | tuple[int, int, int]
 class StylableMixin:
     """
     A mixin for classes that can be styled.
+    This mixin provides properties to access different styles based on the current theme and the state of the widget.
+    Change the style of a widget by updating the style name or changing the current theme in the ThemeStore.
     """
 
     def __init__(self, style_name: "str"):
@@ -89,15 +91,17 @@ class Style:
 
 class Theme:
 
-    def __init__(self, name: str, styles: dict[str, Style] = None, variables: dict = None):
+    def __init__(self, name: str, styles: dict[str, Style] = None, variables: dict = None, root_stylename: str = None):
         self.__name: str = name
         self.__styles: dict[str, Style] = styles or {}
         self.__variables: dict = variables or {}
+        self.__root_style = root_stylename
 
     def get(self, name: str, default: Style = Style()) -> Style:
         """
         Get a style by name.
         :param name: Name of the style
+        :param default: Default value to return if the style is not found
         :return: Style object
         """
         return self.__styles.get(name, default)
@@ -153,16 +157,13 @@ class ThemeStore:
     __current: Theme
 
     @staticmethod
-    def add(name: str, styles: dict[str, Style] = None, variables: dict = None) -> Theme:
+    def add(theme: Theme) -> Theme:
         """
         Add a new theme.
-        :param name: Name of the new theme
-        :param styles: Styles composing the theme
-        :param variables: Variables defined in the theme
+        :param theme: Theme object to add
         :return: The new theme object
         """
-        theme = Theme(name, styles, variables)
-        ThemeStore.__store[name] = theme
+        ThemeStore.__store[theme.name] = theme
         return theme
 
     @staticmethod
@@ -233,20 +234,33 @@ class ThemeStore:
 
         try:
             theme_name = data["name"]
+            root_name = data.get("root", None)
             variables: dict = data.get("variables", dict())
+
             json_styles = data["styles"]
         except (KeyError, TypeError) as e:
             raise TypeError("Invalid theme file. A theme must have a name and one or several styles.") from e
 
         styles = dict()
+        if root_name is not None and root_name not in json_styles:
+            raise ValueError(f"Root style '{root_name}' not found in theme styles.")
+
+        resolved_root = dict()
+
+        if root_name:
+            json_root = json_styles[root_name]
+            del json_styles[root_name]
+            resolved_root = {key: resolve(value) for key, value in json_root.items()}
+            styles[root_name] = Style(**resolved_root)
+
         for name, style in json_styles.items():
             try:
                 resolved_style = {key: resolve(value) for key, value in style.items()}
-                styles[name] = Style(**resolved_style)
+                styles[name] = Style(**{**resolved_root, **resolved_style})
             except (KeyError, TypeError) as e:
                 raise TypeError(f"Invalid style '{name}' in theme '{theme_name}'.") from e
 
-        return ThemeStore.add(theme_name, styles, variables)
+        return ThemeStore.add(Theme(theme_name, styles, variables, root_name))
 
     @staticmethod
     def remove(name: str) -> None:
