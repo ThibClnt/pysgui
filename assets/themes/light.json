@@ -29,8 +29,7 @@
       "shadow_offset": "$shadow_offset"
     },
     "window": {
-      "caption_height": 24,
-      "background_color": "red"
+      "caption_height": 24
     }
   }
 }

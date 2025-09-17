@@ -3,6 +3,7 @@ __all__ = ["Color", "COLORS", "ColorType", "StylableMixin", "Style", "Theme", "T
 
 from dataclasses import dataclass
 import json
+from typing import Callable
 
 import pygame
 from pygame import Color
@@ -16,11 +17,33 @@ class StylableMixin:
     """
     A mixin for classes that can be styled.
     This mixin provides properties to access different styles based on the current theme and the state of the widget.
-    Change the style of a widget by updating the style name or changing the current theme in the ThemeStore.
+    Change the style of a widget by updating the style name or using the style property.
+
+    Example::
+
+        class MyWidget(StylableMixin):
+            def __init__(self):
+                StylableMixin.__init__(self, "my_widget")
+
+            def draw(self, surface):
+                pygame.draw.rect(surface, self.style.background_color, self.rect)
+
+        widget = MyWidget()
+
+        # Use a custom style defined in the current theme
+        widget.style_name = "custom_widget"
+
+        # Override the current style with a custom style
+        widget.style = Style(background_color=(255, 0, 0))
+
+        # Revert to the style defined in the current theme
+        widget.style = None
     """
 
-    def __init__(self, style_name: "str"):
-        self.style_name: str = style_name
+    def __init__(self, style_name: "str", on_style_change: Callable[[], None] = (lambda: None)):
+        self.__style_name: str = style_name
+        self.__style: Style | None = None
+        self._on_style_change = on_style_change
 
     @property
     def active_style(self):
@@ -34,13 +57,37 @@ class StylableMixin:
     def focus_style(self):
         return self.__get_with_state("focus")
 
+    def handle_event(self, event: pygame.Event) -> bool:
+        if event.type == pygame.USEREVENT and event.user_type == "theme_change":
+            self._on_style_change()
+            return True
+        return False
+
     @property
     def hover_style(self):
         return self.__get_with_state("hover")
 
     @property
+    def on_style_change(self):
+        return self._on_style_change
+
+    @property
     def style(self):
-        return ThemeStore.current().get(self.style_name)
+        return self.__style or ThemeStore.current().get(self.style_name)
+
+    @style.setter
+    def style(self, value: Style | None):
+        self.__style = value
+        self._on_style_change()
+
+    @property
+    def style_name(self):
+        return self.__style_name
+
+    @style_name.setter
+    def style_name(self, value: str):
+        self.__style_name = value
+        self._on_style_change()
 
     def __get_with_state(self, state: str) -> Style:
         return ThemeStore.current().get(f"{self.style_name}:{state}", self.style)
@@ -88,6 +135,14 @@ class Style:
             return get_font(self.secondary_font_name, self.secondary_font_size)
         return get_font(self.font_name, self.font_size)
 
+    def clone(self, **kwargs) -> Style:
+        """
+        Create a copy of the style with some attributes replaced.
+        :param kwargs: Attributes to replace.
+        :return: A new Style object with the replaced attributes.
+        """
+        return Style(**{**self.__dict__, **kwargs})
+
 
 class Theme:
 
@@ -95,16 +150,16 @@ class Theme:
         self.__name: str = name
         self.__styles: dict[str, Style] = styles or {}
         self.__variables: dict = variables or {}
-        self.__root_style = root_stylename
+        self.__root_stylename = root_stylename
 
-    def get(self, name: str, default: Style = Style()) -> Style:
+    def get(self, name: str, default: Style | None = None) -> Style:
         """
         Get a style by name.
         :param name: Name of the style
         :param default: Default value to return if the style is not found
         :return: Style object
         """
-        return self.__styles.get(name, default)
+        return self.__styles.get(name, default or self.__styles.get(self.__root_stylename))
 
     def get_variable(self, name: str, default=None):
         """

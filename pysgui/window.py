@@ -18,6 +18,7 @@ class Window(StylableMixin):
         :param visible: If False, the window will not be drawn or receive events.
         """
         StylableMixin.__init__(self, "window")
+        self._on_style_change = self._build_surfaces
 
         self._rect: pg.Rect = rect if rect else pg.Rect(0, 0, 0, 0)
         self._fullscreen = fullscreen
@@ -47,6 +48,9 @@ class Window(StylableMixin):
         return self._fullscreen
 
     def handle_event(self, event: pg.Event) -> bool:
+        # handle style change
+        StylableMixin.handle_event(self, event)
+
         if not self.visible:
             return False
 
