@@ -1,18 +1,20 @@
 import pygame as pg
 from typing import final
 
+from .common import SingletonMeta
 from .styling import ThemeStore
 from .window import Window
 
 
 @final
-class Application:
+class Application(metaclass=SingletonMeta):
     """
     Main class for the application.
     The application is responsible for running the main loop, handling events and updating the windows.
     This class can not be inherited. In order to add custom behavior, inherit the Window class instead.
     Only one instance of this class should be created.
     """
+    __instance = None
 
     def __init__(self, title: str = "Application", size: tuple[int, int] = (800, 600), fps: int = 60, flags: int = 0):
         """
@@ -22,6 +24,7 @@ class Application:
         :param fps: Maximum framerate of the application
         :param flags: Flags for the application window. Use pygame display flags.
         """
+
         pg.init()
         ThemeStore.load_default_themes()
 
