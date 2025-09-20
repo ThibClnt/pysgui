@@ -54,6 +54,11 @@ class StylableMixin:
         return self.__get_with_state("focus")
 
     def handle_event(self, event: pg.Event) -> bool:
+        """
+        Handle theme change events.
+        :param event: event to test and handle.
+        :return:
+        """
         if event.type == pg.USEREVENT and event.user_type == "theme_change":
             self._on_style_change()
             return True
