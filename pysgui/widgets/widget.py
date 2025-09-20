@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Callable
 
 import pygame as pg
@@ -23,8 +22,8 @@ class Widget(StylableMixin):
         :param style_name: name of the style to use for this widget. see :class:`StylableMixin` for details.
         """
         super().__init__(style_name)
-        self._on_style_change = self._rebuild
-        self._on_size_change: Callable[[tuple[int, int], tuple[int, int]], None] = lambda _1, _2: self._rebuild()
+        self._on_style_change = self.rebuild
+        self._on_size_change: Callable[[tuple[int, int], tuple[int, int]], None] = lambda _1, _2: self.rebuild()
 
         _pos = pos or (0, 0)
         _size = size
@@ -50,11 +49,10 @@ class Widget(StylableMixin):
         """
         pass
 
-    def handle_event(self, event: pg.Event, parent_pos: tuple[int, int] = (0, 0)) -> bool:
+    def handle_event(self, event: pg.Event) -> bool:
         """
         Handle an event. Return True if the event was handled, False otherwise.
         :param event: Event to handle.
-        :param parent_pos: Position of the parent widget, used for nested widgets.
         :return:
         """
         super().handle_event(event)
@@ -84,7 +82,7 @@ class Widget(StylableMixin):
     def rect(self):
         return self._rect
 
-    def _rebuild(self):
+    def rebuild(self):
         """
         Rebuild the widget, for example when the style or the size changes.
         :return:

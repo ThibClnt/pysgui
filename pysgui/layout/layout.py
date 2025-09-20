@@ -1,6 +1,6 @@
 import pygame as pg
 
-from pysgui import Widget
+from pysgui.widgets import Widget
 
 
 class Layout:
