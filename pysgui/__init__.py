@@ -1,4 +1,4 @@
-from .application import Application
+from .core import *
 from .styling import *
-from .widget import Widget
-from .window import PopupWindow, Window
+from .util import *
+from .widgets import *

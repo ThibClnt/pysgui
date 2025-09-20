@@ -1,9 +1,9 @@
 import pygame as pg
 from typing import final
 
-from .common import SingletonMeta
-from .styling import ThemeStore
-from .window import Window
+from pysgui.util import SingletonMeta
+from pysgui.styling import ThemeStore
+from pysgui.widgets import Window
 
 
 @final

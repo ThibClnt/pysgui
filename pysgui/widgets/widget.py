@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pygame as pg
 
-from .styling import StylableMixin
+from pysgui.styling import StylableMixin
 
 
 class Widget(StylableMixin):
@@ -24,5 +24,3 @@ class Widget(StylableMixin):
 
     def _rebuild(self):
         pass
-
-
