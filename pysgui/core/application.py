@@ -1,6 +1,7 @@
 import pygame as pg
 from typing import final
 
+from .windows_manager import WindowsManager
 from pysgui.util import SingletonMeta
 from pysgui.styling import ThemeStore
 from pysgui.widgets import Window
@@ -16,7 +17,7 @@ class Application(metaclass=SingletonMeta):
     """
     __instance = None
 
-    def __init__(self, title: str = "Application", size: tuple[int, int] = (800, 600), fps: int = 60, flags: int = 0):
+    def __init__(self, title: str = "Application", size: tuple[int, int] = (800, 600), fps: int = 60, flags: int = 0, no_root : bool = False):
         """
         Create a new application instance.
         :param title: Title of the application window
@@ -38,20 +39,22 @@ class Application(metaclass=SingletonMeta):
 
         self._clock = pg.time.Clock()
 
-        self._windows: list[Window] = []
+        self._windows_manager: WindowsManager = WindowsManager(self._screen)
+
+        if not no_root:
+            self._windows_manager.add(Window(fullscreen=True), z_index=0)
 
         self.running = False
 
-    def add_window(self, window: Window):
+    def add_window(self, window: Window, z_index: int = -1) -> Window:
         """
         Add a window to the application.
         :param window: Window instance to be added
-        :return:
+        :param z_index: The z-index of the window. Higher values are drawn on top of lower values. (Not implemented yet)
+        :return: The id of the added window.
         """
-        self._windows.append(window)
-
-        if window.fullscreen:
-            window.rect = self._screen.get_rect()
+        self._windows_manager.add(window, z_index)
+        return window
 
     def quit(self):
         """
@@ -70,9 +73,6 @@ class Application(metaclass=SingletonMeta):
         self.running = True
 
         while self.running:
-            if len(self._windows) == 0:
-                raise RuntimeError("No windows in the application. Add at least one window before running the application.")
-
             dt = self._clock.tick(self.fps) / 1000.0
 
             events = pg.event.get()
@@ -80,24 +80,10 @@ class Application(metaclass=SingletonMeta):
                 if event.type == pg.QUIT:
                     self.quit()
                     return
+                self._windows_manager.handle_event(event)
 
-                if event.type == pg.VIDEORESIZE:
-                    self._size = event.size
-                    self._screen = pg.display.set_mode(self._size, self._flags)
-                    for window in self._windows:
-                        if window.fullscreen:
-                            window.rect = self._screen.get_rect()
-
-                for window in reversed(self._windows):
-                    window.handle_event(event)
-
-            for window in self._windows:
-                window.update(dt)
-
-            self._screen.fill((0, 0, 0))
-            for window in self._windows:
-                window.draw(self._screen)
-
+            self._windows_manager.update(dt)
+            self._windows_manager.draw()
             pg.display.flip()
 
     @property
@@ -111,3 +97,7 @@ class Application(metaclass=SingletonMeta):
     @title.setter
     def title(self, value):
         pg.display.set_caption(value)
+
+    @property
+    def windows_manager(self):
+        return self._windows_manager
