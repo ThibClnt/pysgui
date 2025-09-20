@@ -75,14 +75,15 @@ app.run()
 - [x] Application & Window management
 - [x] Stylesheet and theming system
 - [x] Fixed layout
-- [] Basic Widgets (labels, buttons)
-- [] Popup Windows with captions, 
-- [] Horizontal & Vertical layouts
-- [] Advanced built-in widgets (sliders, text inputs, checkboxes, …)
-- [] Avanced windows and container (with scrollbars)
-- [] Add more default themes (complete light theme, add dark theme)
-- [] Constraint-based layout system
+- [ ] Basic Widgets (labels, buttons)
+- [ ] Popup Windows with captions, 
+- [ ] Horizontal & Vertical layouts
+- [ ] Advanced built-in widgets (sliders, text inputs, checkboxes, …)
+- [ ] Avanced windows and container (with scrollbars)
+- [ ] Add more default themes (complete light theme, add dark theme)
+- [ ] Constraint-based layout system
 
 ## 🛠 Contributing
 
 This project is still at its beginning and not opened to contribution yet.
+
